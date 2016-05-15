@@ -85,6 +85,8 @@ export function getInitialTransitionState(oldChildren, nextChildren) {
     const { entering, exiting } =
       getNodeTransitions(getChildData(oldChild), getChildData(newChild)) || {};
 
+    console.log('zzzzz entering, exiting ', entering, exiting);
+
     nodesWillExit = nodesWillExit || !!exiting;
     nodesWillEnter = nodesWillEnter || !!entering;
 
@@ -135,6 +137,7 @@ function getChildPropsOnExit(animate, data, exitingNodes, cb) { // eslint-disabl
     const before = animate.onExit && animate.onExit.before ? animate.onExit.before : identity;
     // If nodes need to exit, transform them with the provided onExit.before function.
     data = data.map((datum, idx) => {
+      console.log('zzz: datum: ', datum)
       const key = (datum.key || idx).toString();
       return exitingNodes[key] ? assign({}, datum, before(datum)) : datum;
     });
@@ -198,6 +201,8 @@ function getChildPropsOnEnter(animate, data, enteringNodes) {
  * @return {Function}              Child-prop transformation function.
  */
 export function getTransitionPropsFactory(props, state, setState) {
+  console.log('zzz getTransitionPropsFactory: ');
+
   const nodesWillExit = state && state.nodesWillExit;
   const nodesWillEnter = state && state.nodesWillEnter;
   const nodesShouldEnter = state && state.nodesShouldEnter;
@@ -230,6 +235,7 @@ export function getTransitionPropsFactory(props, state, setState) {
   };
 
   return function getTransitionProps(child, index) { // eslint-disable-line max-statements
+    console.log('zzz: getTransitionProps: ', child );
     const data = getChildData(child) || [];
     const animate = defaults({}, props.animate, child.props.animate);
 
@@ -246,6 +252,7 @@ export function getTransitionPropsFactory(props, state, setState) {
       const exit = transitionDurations.exit || getChildTransitionDuration(child, "onExit");
       // if nodesWillExit, but this child has no exiting nodes, set a delay instead of a duration
       const animation = exitingNodes ? {duration: exit} : {delay: exit};
+      console.log('zzzz: nodesWillExit: ');
       return onExit(exitingNodes, data, assign({}, animate, animation));
     } else if (nodesWillEnter) {
       const enteringNodes = childTransitions && childTransitions.entering;
@@ -253,6 +260,7 @@ export function getTransitionPropsFactory(props, state, setState) {
       const move = transitionDurations.move ||
         child.props.animate && child.props.animate.duration;
       const animation = { duration: nodesShouldEnter && enteringNodes ? enter : move };
+      console.log('zzzz: nodesWillExitEnter: ');
       return onEnter(enteringNodes, data, assign({}, animate, animation));
     } else if (!state && animate && animate.onExit) {
       // This is the initial render, and nodes may enter when props change. Because
@@ -264,6 +272,7 @@ export function getTransitionPropsFactory(props, state, setState) {
       // might go from `opacity: undefined` to `opacity: 0`, which would result in
       // interpolated `opacity: NaN` values.
       //
+
       return getInitialChildProps(animate, data);
     }
     return { animate, data };
